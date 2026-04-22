@@ -1,12 +1,20 @@
-#!/bin/bash
+#!/bin/zsh
 
-ctx="${1:-32768}"
-threads="${2:-8}"
-port="${3:-8080}"
+declare -A models=(
+    ["gemma4-E4B-Q4_K_M"]="unsloth/gemma-4-E4B-it-GGUF:Q4_K_M"
+    ["gemma4-E2B-Q4_K_M"]="unsloth/gemma-4-E2B-it-GGUF:Q4_K_M"
+)
+model="${1:-gemma4-E4B-Q4_K_M}"
+ctx="${2:-32768}"
+threads="${3:-8}"
+port="${4:-8080}"
 
-
-if [[ ! "$ctx" =~ ^[0-9]+$ || ! "$threads" =~ ^[0-9]+$ || ! "$port" =~ ^[0-9]+$ ]]; then
-    echo "Usage: $0 [ctx] [threads] [port]"
+if [[ -z "${models[$model]}" || ! "$ctx" =~ ^[0-9]+$ || ! "$threads" =~ ^[0-9]+$ || ! "$port" =~ ^[0-9]+$ ]]; then
+    echo "Usage: $0 [model_name] [context_size] [threads] [port]"
+    echo "Available models:" 
+    for key in "${(@k)models}"; do
+        echo "  $key"
+    done
     exit 1
 fi
 
@@ -15,8 +23,8 @@ uvx mcp-proxy --named-server-config config.json --allow-origin "*" --port 8001 -
 proxy_pid=$!
 
 llama-server \
-    -hf unsloth/gemma-4-E4B-it-GGUF:Q4_K_M \
-    --alias gemma4-E4B-Q4_K_M \
+    -hf "${models[$model]}" \
+    --alias "$model" \
     --host 127.0.0.1 \
     --webui-mcp-proxy \
     --port "$port" \
@@ -33,3 +41,4 @@ sleep 10
 open "http://127.0.0.1:$port"
 
 wait "$llama_pid"
+wait "$proxy_pid"

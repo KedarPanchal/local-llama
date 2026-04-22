@@ -83,7 +83,7 @@ You can customize the execution by passing arguments:
 
 Model Context Protocol (MCP) allows the LLM to interact with external tools and data. This project uses `mcp-proxy` to manage these connections.
 
-### How to connect an MCP Server:
+### How to connect an MCP Server
 
 MCP servers are defined in the `config.json` file.
 However, they are not automatically connected to the `llama.cpp` instance.

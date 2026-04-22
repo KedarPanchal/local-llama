@@ -3,6 +3,7 @@
 declare -A models=(
     ["gemma4-E4B-Q4_K_M"]="unsloth/gemma-4-E4B-it-GGUF:Q4_K_M"
     ["gemma4-E2B-Q4_K_M"]="unsloth/gemma-4-E2B-it-GGUF:Q4_K_M"
+    ["uncensored-gemma4-E4B-Q4_K_M"]="HauhauCS/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive"
 )
 model="${1:-gemma4-E4B-Q4_K_M}"
 ctx="${2:-32768}"

@@ -32,6 +32,7 @@ llama-server \
     --ctx-size "$ctx" \
     --threads "$threads" \
     --context-shift \
+    --jinja \
     -n -1 &
 llama_pid=$!
 trap "kill $llama_pid 2>/dev/null" INT

@@ -1,8 +1,0 @@
-{
-    "mcpServers": {
-        "searxng": {
-            "command": "docker-compose",
-            "args": ["run", "--rm", "mcp-searxng"]
-        }
-    }
-}

@@ -1,114 +1,64 @@
-# Local Llama LLM Workflow
+# Gemma 4 Local Inference Server
 
-A powerful, self-contained local environment for running Large Language Models (LLMs) with integrated search capabilities and Model Context Protocol (MCP) support. This project combines `llama.cpp`, `SearXNG`, and `mcp-proxy` to provide a seamless, private AI experience.
+This repository provides a streamlined setup for running **Gemma 4** models locally using `llama-server`. It includes a pre-configured environment, a model preset file, and an automated startup script that handles background processing, health checks, and automatic browser opening.
 
-## Quick Start
+## 📋 Prerequisites
 
-1. **Ensure Prerequisites are installed** (see below).
-2. **Make the script executable**:
-    ```bash
-    chmod +x local-llama.sh
-    ```
-    - This requires the `zsh` shell, as the bash shell on macOS is too old for some of the features utilized.
-3. **Run the workflow**:
-    ```bash
-    ./local-llama.sh
-    ```
+Before running this repository, ensure you have the following installed:
 
----
+1.  **llama-server**: You must have the `llama-server` binary (from the [llama.cpp](https://github.com/ggerganov/llama.cpp) project) available in your system PATH.
+2.  **curl**: Used to check the server health status.
+3.  **zsh**: The startup script is written in Zsh.
+4.  **Web Browser**: The script will automatically attempt to open a browser window once the server is ready.
 
-## Dependencies
+## 🚀 Getting Started
 
-To run this project, you need the following tools installed on your system:
-
-### 1. Docker & Docker Compose
-Used to orchestrate the SearXNG search engine and its MCP wrapper.
-- **Install**: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (macOS/Windows) or Docker Engine (Linux).
-
-### 2. uv
-A fast Python package installer and resolver. It is used to run `mcp-proxy` on the fly.
-- **Install**:
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
-
-### 3. llama.cpp (llama-server)
-The core engine that runs the GGUF models. You need the `llama-server` executable in your system PATH.
-- **Install via Homebrew (macOS)**:
-  ```bash
-  brew install llama.cpp
-  ```
-- **Build from source**: Follow instructions at [github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp).
-
----
-
-## Installation & Setup
-
-1. **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd localllama
-    ```
-
-2. **Configure SearXNG**:
-    The project comes with a pre-configured `searxng` directory. Ensure the permissions allow Docker to read/write to the `cache` and `config` folders.
-
-3. **Verify `llama-server`**:
-    Ensure you can run `llama-server --version` in your terminal.
-
----
-
-## Running the Project
-
-The `local-llama.sh` script automates the entire startup process:
-
-1. **Starts SearXNG**: Launches the search engine via Docker Compose.
-2. **Starts MCP Proxy**: Runs `mcp-proxy` using `uvx`, loading the configuration from `config.json`.
-3. **Launches llama-server**: Downloads (if necessary) and runs the `Gemma-4-E4B` model from Hugging Face.
-4. **Opens Web UI**: Automatically opens `http://127.0.0.1:8080` in your default browser.
-
-### Script Arguments
-You can customize the execution by passing arguments:
+### 1. Clone the Repository
 ```bash
-./local-llama.sh [model] [context_size] [threads] [port]
+git clone <your-repository-url>
+cd <repository-folder>
 ```
-- `model`: Default is `gemma4-E4B-Q4_K_M`
-- `context_size`: Default is `32768`.
-- `threads`: Default is `8`.
-- `port`: Default is `8080`.
 
----
+### 2. Permissions
+Make the startup script executable:
+```bash
+chmod +x run_server.sh
+```
 
-## Connecting MCP Servers
+### 3. Run the Server
+Execute the script to start the inference server:
+```bash
+./run_server.sh
+```
 
-Model Context Protocol (MCP) allows the LLM to interact with external tools and data. This project uses `mcp-proxy` to manage these connections.
+**What happens next?**
+*   The script will launch `llama-server` in the background.
+*   It will poll the `/health` endpoint until the server is fully initialized.
+*   Once "OK," it will automatically open `http://127.0.0.1:8080` in your default browser.
+*   The script will stay active as long as the server is running. Press `Ctrl+C` to shut down the server gracefully.
 
-### How to connect an MCP Server
+## ⚙️ Configuration
 
-MCP servers are defined in the `config.json` file.
-However, they are not automatically connected to the `llama.cpp` instance.
-When you run the `local-llama.sh` script, it will output a lot of debug information.
-In that output, there are URLs to connect the MCP servers to the `llama.cpp` instance.
-The format of the URL is `http://127.0.0.1:8001/servers/{server_name}/sse`.
+The server configuration is managed via the `preset.ini` file. You can modify this file to tune performance based on your hardware.
 
-For example, the format of the `searxng` server (used to give the LLM web search capabilities) is `http://127.0.0.1:8001/servers/searxng/sse`.
+### Key Settings:
+*   **threads**: Currently set to `8`. Adjust this based on your CPU core count.
+*   **ctx-size**: Set to `32768` (32k context window).
+*   **jinja**: Enabled (`true`) for template support.
+*   **context-shift**: Enabled (`true`) for efficient long-context handling.
 
-To add these servers, on the browser tab opened by the script, follow these steps:
+### Available Models:
+The preset includes two model configurations:
+1.  **gemma4-E2B-Q4_K_M**: A smaller, faster model.
+2.  **gemma4-12B-Q4_K_M**: A larger, more capable model (set to `load-on-startup`).
 
-1. Click the settings icon (gear) in the top right corner.
-2. Click on the "MCP" section.
-3. Click "Add New Server".
-4. Paste the URL for the server you want to connect (given by the script output), but replace the `sse` at the end of the URL with `mcp`.
-    - For example, for the `searxng` server, you would paste `http://127.0.0.1:8001/servers/searxng/mcp`.
-5. Click "Add".
-6. Click "Save Settings" at the bottom of the settings menu.
+*Note: The server will attempt to fetch these models from Hugging Face automatically if they are not found locally.*
 
-After following these steps, the MCP server will be connected to the `llama.cpp` instance and the LLM will be able to use it to enhance its responses.
+## 🛠 Troubleshooting
 
----
+*   **Port Conflict**: If the server fails to start, ensure port `8080` is not being used by another application.
+*   **Slow Startup**: The first time you run the script, it may take a significant amount of time to download the model files from Hugging Face.
+*   **Permissions**: If you get a "Permission Denied" error, ensure you ran `chmod +x run_server.sh`.
 
-## Configuration
-
-- **`config.json`**: Defines the MCP servers available to the proxy.
-- **`docker-compose.yml`**: Manages the SearXNG service and its MCP bridge.
-- **`local-llama.sh`**: The orchestration script. You can modify the model alias or Hugging Face path here if you wish to use a different model.
+> [!NOTE]
+> This README was generated by Gemma 4 12B running using this repository's configuration!

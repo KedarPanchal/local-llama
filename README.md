@@ -1,5 +1,8 @@
 # Gemma 4 Local Inference Server
 
+> [!IMPORTANT]
+> This repository is archived. My config is now stored in my [dotfiles](https://www.github.com/KedarPanchal/dotfiles).
+
 This repository provides a streamlined setup for running **Gemma 4** models locally using `llama-server`. It includes a pre-configured environment, a model preset file, and an automated startup script that handles background processing, health checks, and automatic browser opening.
 
 ## 📋 Prerequisites
